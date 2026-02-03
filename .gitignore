@@ -1,0 +1,13 @@
+.venv/
+**/.venv/
+backend/.env
+backend/env
+frontend/node_modules/
+backend/data/conversations/
+backend/data/conversations/test/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store

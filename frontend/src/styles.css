@@ -50,14 +50,14 @@ body {
 
 
 .chat-brand-logo {
-  width: 34px;
-  height: 34px;
-  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 0;
   object-fit: cover;
 }
 
 .chat-brand-title {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--primary);
   letter-spacing: 1px;

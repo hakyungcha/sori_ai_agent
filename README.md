@@ -77,3 +77,117 @@ npm run dev
 **학생 화면 vs 관리자 화면:**
 - **학생 화면**: AI 답변만 표시 (상태 정보 숨김)
 - **관리자 화면**: 모든 상태 정보 + JSON 출력 가능
+
+## 자주 발생하는 오류와 해결 방법 (Windows)
+
+### 1) PowerShell에서 `.venv\Scripts\Activate.ps1` 실행이 막힐 때
+
+에러 메시지 예시:
+
+```text
+.venv\Scripts\Activate.ps1 : 이 시스템에서 스크립트를 실행할 수 없으므로 ...
+PSSecurityException
+```
+
+**해결 방법 (현재 PowerShell 창에서만 임시 허용):**
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+첫 줄은 **현재 창에서만** 스크립트 실행을 허용하고, 둘째 줄에서 가상환경을 활성화합니다.
+
+### 2) `uvicorn` 명령어를 인식하지 못할 때
+
+에러 메시지 예시:
+
+```text
+uvicorn : 'uvicorn' 용어가 cmdlet, 함수, 스크립트 파일 또는 실행할 수 있는 프로그램 이름으로 인식되지 않습니다.
+```
+
+**해결 방법:**
+
+- 가상환경이 활성화된 상태에서 다음과 같이 실행합니다:
+
+```powershell
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 3) 포트 충돌 (`[WinError 10048]` 등)로 서버가 안 켜질 때
+
+에러 메시지 예시:
+
+```text
+[Errno 10048] error while attempting to bind on address ('0.0.0.0', 8000)
+각 소켓 주소(프로토콜/네트워크 주소/포트)는 하나만 사용할 수 있습니다
+```
+
+**해결 방법: 8000 포트를 사용하는 프로세스 종료**
+
+```powershell
+netstat -ano | findstr :8000
+taskkill /F /PID <PID>
+```
+
+여기서 `<PID>`는 `netstat` 결과에서 8000 포트를 점유하고 있는 프로세스 ID입니다.  
+여러 개가 복잡하면 아래처럼 파이썬 프로세스를 한 번에 종료할 수도 있습니다:
+
+```powershell
+taskkill /F /IM python.exe
+```
+
+### 4) 백엔드 500 에러 + 콘솔에서 `UnicodeEncodeError: 'cp949'`가 뜰 때
+
+Windows 콘솔의 기본 인코딩(cp949)에서 이모지나 일부 문자를 출력할 수 없어서 발생합니다.
+
+**해결 방법(이미 적용된 코드 기준):**
+
+- `print()`에 이모지(예: 😢, ⚠️ 등)를 사용하지 않고, `[WARN]`, `[ERR]` 같은 ASCII 문자열로만 로깅합니다.
+- 만약 직접 로그를 추가할 때도 **이모지 대신 영문/숫자만 사용**합니다.
+
+### 5) `npm run dev` 실행 시 PowerShell에서 `npm.ps1` 보안 오류가 날 때
+
+에러 메시지 예시:
+
+```text
+npm : 이 시스템에서 스크립트를 실행할 수 없으므로 C:\Program Files\nodejs\npm.ps1 파일을 로드할 수 없습니다.
+PSSecurityException
+```
+
+**해결 방법 (현재 PowerShell 창에서만 임시 허용):**
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+npm run dev
+```
+
+또는 PowerShell 대신 **명령 프롬프트(cmd)**를 열고 아래처럼 실행할 수도 있습니다:
+
+```cmd
+cd C:\GenesisLAB\frontend
+npm run dev
+```
+
+### 6) 브라우저에서 “페이지를 표시할 수 없음”일 때 체크 리스트
+
+- **백엔드**:
+  - PowerShell 창에 아래와 같은 로그가 떠 있는지 확인:
+
+    ```text
+    Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+    ```
+
+  - 브라우저에서 `http://localhost:8000/docs` 접속 → FastAPI 문서 페이지가 보이면 정상.
+
+- **프론트엔드**:
+  - `frontend` 폴더에서:
+
+    ```powershell
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+    npm run dev
+    ```
+
+  - 브라우저에서 `http://localhost:5173` 접속.
+
+백엔드/프론트 둘 다 켜져 있어야 전체 서비스(SORI)가 정상적으로 동작합니다.

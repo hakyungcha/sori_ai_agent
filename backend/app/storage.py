@@ -88,19 +88,24 @@ def list_conversations(include_test: bool = False) -> List[Dict]:
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 data = json.load(f)
+
+            # end_report나 analysis가 None일 수도 있으므로 안전하게 처리
+            end_report = data.get("end_report") or {}
+            analysis = data.get("analysis") or {}
             
             conversations.append({
                 "filename": filepath.name,
                 "date": data.get("date", ""),
                 "time": data.get("time", ""),
                 "timestamp": data.get("timestamp", ""),
-                "summary": data.get("end_report", {}).get("summary", "대화 요약 없음"),
-                "risk_score": data.get("analysis", {}).get("risk_score", 0),
-                "distress_level": data.get("analysis", {}).get("emotional_distress", "낮음"),
+                "summary": end_report.get("summary", "대화 요약 없음"),
+                "risk_score": analysis.get("risk_score", 0),
+                "distress_level": analysis.get("emotional_distress", "낮음"),
                 "is_test": False,
             })
         except Exception as e:
-            print(f"⚠️ 대화 파일 읽기 실패 ({filepath}): {e}")
+            # Windows 콘솔(cp949)에서 이모지 사용 시 UnicodeEncodeError가 발생할 수 있어 ASCII만 사용
+            print(f"[WARN] 대화 파일 읽기 실패 ({filepath}): {e}")
     
     # 테스트 대화 읽기 (include_test가 True일 때만)
     if include_test:
@@ -108,19 +113,22 @@ def list_conversations(include_test: bool = False) -> List[Dict]:
             try:
                 with open(filepath, "r", encoding="utf-8") as f:
                     data = json.load(f)
+
+                end_report = data.get("end_report") or {}
+                analysis = data.get("analysis") or {}
                 
                 conversations.append({
                     "filename": filepath.name,
                     "date": data.get("date", ""),
                     "time": data.get("time", ""),
                     "timestamp": data.get("timestamp", ""),
-                    "summary": data.get("end_report", {}).get("summary", "대화 요약 없음"),
-                    "risk_score": data.get("analysis", {}).get("risk_score", 0),
-                    "distress_level": data.get("analysis", {}).get("emotional_distress", "낮음"),
+                    "summary": end_report.get("summary", "대화 요약 없음"),
+                    "risk_score": analysis.get("risk_score", 0),
+                    "distress_level": analysis.get("emotional_distress", "낮음"),
                     "is_test": True,
                 })
             except Exception as e:
-                print(f"⚠️ 테스트 대화 파일 읽기 실패 ({filepath}): {e}")
+                print(f"[WARN] 테스트 대화 파일 읽기 실패 ({filepath}): {e}")
     
     return conversations
 

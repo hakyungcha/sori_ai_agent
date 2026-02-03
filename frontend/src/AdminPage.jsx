@@ -206,33 +206,34 @@ export default function AdminPage({ onBack, onLogout }) {
   if (selectedConversation) {
     return (
       <div className="admin-page">
-        <header className="header">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <button
-                type="button"
-                onClick={() => setSelectedConversation(null)}
-                className="ghost"
-              >
-                ← 목록으로
-              </button>
-              <div>
-                <h1>대화 상세</h1>
-                <p>
-                  {selectedConversation.date} {selectedConversation.time}
-                </p>
-              </div>
+      <header className="header admin-header">
+        <div className="admin-header-inner">
+          <div className="admin-header-left">
+            <button
+              type="button"
+              onClick={() => setSelectedConversation(null)}
+              className="admin-back"
+              aria-label="대화 목록으로 돌아가기"
+            >
+              ← 목록으로
+            </button>
+            <div>
+              <h1>대화 상세</h1>
+              <p>
+                {selectedConversation.date} {selectedConversation.time}
+              </p>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
         <div style={{ 
-          display: "flex", 
-          gap: "24px", 
-          padding: "24px", 
-          maxWidth: "1200px", 
-          margin: "0 auto" 
-        }}>
+        display: "flex", 
+        gap: "24px", 
+        padding: "12px 24px 24px", 
+        maxWidth: "1200px", 
+        margin: "0 auto" 
+      }}>
           <Sidebar 
             currentTab={activeTab} 
             onTabChange={setActiveTab}
@@ -332,11 +333,16 @@ export default function AdminPage({ onBack, onLogout }) {
   // 메인 대시보드 화면
   return (
     <div className="admin-page">
-      <header className="header">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <button type="button" onClick={onBack} className="ghost">
-              ← 뒤로 가기
+      <header className="header admin-header">
+        <div className="admin-header-inner">
+          <div className="admin-header-left">
+            <button
+              type="button"
+              onClick={onBack}
+              className="admin-back"
+              aria-label="홈으로 돌아가기"
+            >
+              ← 홈으로
             </button>
             <div>
               <h1>관리자 대시보드</h1>
@@ -346,13 +352,13 @@ export default function AdminPage({ onBack, onLogout }) {
         </div>
       </header>
 
-      <div style={{ 
-        display: "flex", 
-        gap: "24px", 
-        padding: "24px", 
-        maxWidth: "1200px", 
-        margin: "0 auto" 
-      }}>
+        <div style={{ 
+          display: "flex", 
+          gap: "24px", 
+          padding: "12px 24px 24px", 
+          maxWidth: "1200px", 
+          margin: "0 auto" 
+        }}>
         <Sidebar 
           currentTab={activeTab} 
           onTabChange={setActiveTab}

@@ -42,7 +42,7 @@ def generate_reply(history: List[ChatTurn], message: str) -> Optional[str]:
                 recent_context = " ".join([turn.content for turn in history[-3:] if turn.role == "user"])
                 search_query = recent_context + " " + message
             relevant_chunks = search_relevant_chunks(search_query, history, n_results=5)  # 3개 → 5개로 증가
-            print(f"🔍 RAG 검색 결과: {len(relevant_chunks)}개 청크 발견")
+            print(f"[RAG] 검색 결과: {len(relevant_chunks)}개 청크 발견")
         except Exception as e:
             print(f"⚠️ RAG 검색 중 예외 발생 (계속 진행): {e}")
             relevant_chunks = []
@@ -244,8 +244,9 @@ def generate_reply(history: List[ChatTurn], message: str) -> Optional[str]:
         })
     # 대화 히스토리 추가 (전체 히스토리 포함 - 대화 흐름 유지)
     # 최근 20턴까지 포함하여 대화 맥락을 충분히 반영
+    role_map = {"ai": "assistant", "user": "user"}
     for turn in history[-20:]:
-        messages.append({"role": turn.role, "content": turn.content})
+        messages.append({"role": role_map.get(turn.role, "user"), "content": turn.content})
     messages.append({"role": "user", "content": message})
     
     # 마지막에 대화 맥락 요약 추가 (반복 방지 + RAG 활용 강조 + 대화 흐름 유지)

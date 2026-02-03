@@ -29,7 +29,7 @@ body {
 }
 
 .header {
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .header h1 {
@@ -696,6 +696,39 @@ button:disabled {
 .ghost:focus-visible {
   background: var(--accent);
   color: var(--primary-dark);
+}
+
+.admin-header {
+  padding: 16px 24px 6px;
+}
+
+.admin-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-back {
+  background: #f1f5f9;
+  color: #1e3a5f;
+  border: 1px solid #e2e8f0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.admin-back:hover:not(:disabled),
+.admin-back:focus-visible {
+  background: #e2e8f0;
+  color: #0f2744;
 }
 
 .status {

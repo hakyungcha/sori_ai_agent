@@ -688,7 +688,11 @@ def build_history_analysis(history: List[ChatTurn], current_message: str) -> Lis
     return analyses
 
 
-def enrich_history_with_analysis(history: List[Dict], current_message: str) -> List[Dict]:
+def enrich_history_with_analysis(
+    history: List[Dict],
+    current_message: str,
+    include_current: bool = True,
+) -> List[Dict]:
     """
     history 딕셔너리 리스트를 받아서 각 사용자 메시지에 analysis 필드를 추가.
     - 위험도 계산은 해당 사용자 발화까지만의 텍스트를 기준으로 함.
@@ -708,8 +712,9 @@ def enrich_history_with_analysis(history: List[Dict], current_message: str) -> L
         for item in history:
             enriched_history.append(item.copy())
         
-        # 현재 메시지 추가
-        enriched_history.append({"role": "user", "content": current_message})
+        # 현재 메시지 추가 (이미 히스토리에 포함되어 있으면 생략)
+        if include_current and current_message:
+            enriched_history.append({"role": "user", "content": current_message})
         
         # 각 사용자 메시지에 대해 분석 수행
         for idx, item in enumerate(enriched_history):
@@ -737,6 +742,14 @@ def enrich_history_with_analysis(history: List[Dict], current_message: str) -> L
                 ]
                 key_topics = _extract_key_topics(slice_history)
                 conversation_turns = len(slice_history)
+                if r >= 80:
+                    trend = "위험"
+                elif r >= 60:
+                    trend = "주의 필요"
+                elif d == "낮음" and r < 35:
+                    trend = "안정화 중"
+                else:
+                    trend = "관찰 필요"
                 
                 # 해당 사용자 메시지에 analysis 필드 추가 (Literal 타입은 문자열로 변환)
                 item["analysis"] = {
@@ -745,6 +758,7 @@ def enrich_history_with_analysis(history: List[Dict], current_message: str) -> L
                     "suicide_signal": str(s),
                     "risk_score": int(r),
                     "next_action": str(a),
+                    "trend": trend,
                     "conversation_turns": conversation_turns,
                     "key_topics": key_topics,
                 }

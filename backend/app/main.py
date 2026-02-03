@@ -160,40 +160,69 @@ def chat(payload: ChatRequest) -> ChatResponse:
             except Exception as report_error:
                 print("[WARN] end report build failed")
                 end_report = None
-            
-            # 대화 종료 시 저장
-            if end_report:
-                try:
-                    # 기존 히스토리를 딕셔너리로 변환
-                    base_history = [
-                        {"role": turn.role, "content": turn.content}
-                        for turn in payload.history
-                    ]
-                    # 각 사용자 메시지에 분석 포함
-                    final_history = enrich_history_with_analysis(base_history, payload.message)
-                    # 마지막 AI 응답 추가
-                    final_history.append({"role": "ai", "content": reply})
-                    
-                    # end_report를 딕셔너리로 변환 (Pydantic v1/v2 호환)
-                    try:
-                        end_report_dict = end_report.dict() if hasattr(end_report, 'dict') else end_report.model_dump()
-                    except:
-                        end_report_dict = None
-                    
-                    save_conversation(
-                        history=final_history,
-                        analysis={
-                            "emotional_distress": str(analysis.emotional_distress),
-                            "suicide_signal": str(analysis.suicide_signal),
-                            "risk_score": int(analysis.risk_score),
-                            "next_action": str(analysis.next_action),
-                        },
-                        end_report=end_report_dict,
-                        is_test=payload.is_admin,  # 관리자 모드면 테스트로 저장
-                    )
-                except Exception as save_error:
-                    print("[WARN] conversation save failed")
-                    # 저장 실패해도 응답은 반환
+
+        # 모든 사용자 발화마다 저장 (요청 단위 저장)
+        try:
+            base_history = [
+                {"role": turn.role, "content": turn.content}
+                for turn in payload.history
+            ]
+            # 연속 중복 발화 제거 (같은 role/content가 연속으로 들어오는 경우)
+            deduped_history = []
+            for item in base_history:
+                if not deduped_history:
+                    deduped_history.append(item)
+                    continue
+                last = deduped_history[-1]
+                if last["role"] == item["role"] and last["content"] == item["content"]:
+                    continue
+                deduped_history.append(item)
+            # 현재 메시지가 이미 히스토리에 포함되어 있으면 중복 추가하지 않음
+            has_current_in_history = (
+                bool(deduped_history)
+                and deduped_history[-1]["role"] == "user"
+                and deduped_history[-1]["content"] == payload.message
+            )
+            # 각 사용자 메시지에 분석 포함
+            final_history = enrich_history_with_analysis(
+                deduped_history,
+                payload.message,
+                include_current=not has_current_in_history,
+            )
+            # 마지막 AI 응답 추가
+            final_history.append({"role": "ai", "content": reply})
+
+            # 최종 히스토리 연속 중복 제거 (저장 직전 안전장치)
+            deduped_final = []
+            for item in final_history:
+                if not deduped_final:
+                    deduped_final.append(item)
+                    continue
+                last = deduped_final[-1]
+                if last.get("role") == item.get("role") and last.get("content") == item.get("content"):
+                    continue
+                deduped_final.append(item)
+            final_history = deduped_final
+
+            # end_report를 딕셔너리로 변환 (Pydantic v1/v2 호환)
+            try:
+                end_report_dict = end_report.dict() if hasattr(end_report, 'dict') else end_report.model_dump()
+            except Exception:
+                end_report_dict = None
+
+            save_conversation(
+                history=final_history,
+                analysis={
+                    "emotional_distress": str(analysis.emotional_distress),
+                    "suicide_signal": str(analysis.suicide_signal),
+                    "risk_score": int(analysis.risk_score),
+                    "next_action": str(analysis.next_action),
+                },
+                end_report=end_report_dict,
+                is_test=payload.is_admin,  # 관리자 모드면 테스트로 저장
+            )
+        except Exception as save_error:
+            print("[WARN] conversation save failed")
         
         # 안전하게 ChatResponse 생성
         try:

@@ -1,4 +1,4 @@
-# 정서 지원 에이전트 (FastAPI + React)
+# SORI_AI_AGENT (FastAPI + React)
 
 대화 기반으로 정서 상태와 위기 신호를 추적하고, 종료 시 종합 리포트를 출력하는 시안입니다.
 

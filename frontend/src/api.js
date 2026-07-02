@@ -32,7 +32,7 @@ export async function sendChat(payload, isAdmin = false) {
     clearTimeout(timeoutId);
     
     if (error.name === "AbortError" || error.message?.includes("aborted")) {
-      throw new Error("요청 시간이 초과되었습니다. 백엔드 서버가 실행 중인지 확인해주세요. (http://localhost:8000)");
+      throw new Error("요청 시간이 초과되었습니다. 백엔드 서버가 실행 중인지 확인해주세요. (http://localhost:8001)");
     }
     
     // 네트워크 에러
